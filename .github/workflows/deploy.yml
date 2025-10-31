@@ -1,0 +1,40 @@
+name: Deployment Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # allows you to trigger it manually
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run lint
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm test --if-present
+
+      - name: Build project
+        run: npm run build --if-present
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}          # Personal token from Vercel
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}        # Organization ID from Vercel
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # Project ID from Vercel
+          working-directory: ./                              # or path to your app
+          vercel-args: '--prod'                              # deploy to production
