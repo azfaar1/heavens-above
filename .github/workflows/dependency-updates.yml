@@ -1,0 +1,52 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # every Monday at midnight
+  workflow_dispatch:       # allows manual run
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated packages
+        run: npm outdated || true
+
+      - name: Update dependencies
+        run: npm update
+
+      - name: Run tests
+        run: npm test --if-present
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b dependency-updates
+          git add package*.json
+          git commit -m "chore: update dependencies"
+          git push origin dependency-updates || true
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dependency-updates
+          title: "Automated Dependency Updates"
+          body: |
+            This PR updates project dependencies to their latest versions.
