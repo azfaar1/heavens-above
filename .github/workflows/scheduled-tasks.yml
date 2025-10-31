@@ -1,0 +1,16 @@
+name: Weekly Maintenance
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"  # Every Sunday at midnight
+  workflow_dispatch:     # Optional: allows manual trigger
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run maintenance script
+        run: echo "Performing weekly maintenance tasks..."
